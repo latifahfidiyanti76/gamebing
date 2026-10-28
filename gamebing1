@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tarik Tambang: Telephone Handling - SMK Kelas 10</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: #2d3436;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        h1 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        p.instruction {
+            color: #636e72;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        /* Area Tarik Tambang */
+        .game-arena {
+            position: relative;
+            background: #dfe6e9;
+            border-radius: 10px;
+            height: 80px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            overflow: hidden;
+            border: 2px solid #b2bec3;
+        }
+        .team-label {
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 2;
+        }
+        .team-left-label { color: #0984e3; }
+        .team-right-label { color: #d63031; }
+
+        .rope-line {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            background: #b2bec3;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+        }
+        .flag {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background: #f1c40f;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: left 0.5s ease-in-out;
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 3;
+        }
+        /* Bagian Pertanyaan */
+        .quiz-box {
+            background: #f7f9fa;
+            border: 1px solid #ced6e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .question-number {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0984e3;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #dfe6e9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #74b9ff;
+            color: white;
+            border-color: #0984e3;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        /* Feedback & Score */
+        #feedback {
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 15px;
+            min-height: 24px;
+        }
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f1f2f6;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        /* Tombol Restart */
+        .restart-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: none;
+            transition: background 0.2s;
+        }
+        .restart-btn:hover {
+            background: #00cec9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tarik Tambang: Telephone Handling</h1>
+        <p class="instruction">Jawab 5 pertanyaan seputar penanganan telepon dengan benar untuk menarik tali ke arah siswa dan memenangkan pertandingan!</p>
+
+        <!-- Arena Tarik Tambang -->
+        <div class="game-arena">
+            <span class="team-label team-left-label">🧑‍🎓 Siswa (Kiri)</span>
+            <div class="rope-line"></div>
+            <div class="flag" id="flag"></div>
+            <span class="team-label team-right-label">💻 Komputer (Kanan)</span>
+        </div>
+
+        <!-- Pertanyaan -->
+        <div id="quiz-container">
+            <div class="quiz-box">
+                <div class="question-number" id="q-num">Pertanyaan 1 dari 5</div>
+                <div class="question-text" id="q-text">Memuat pertanyaan...</div>
+                <div class="options-grid" id="options-container"></div>
+            </div>
+        </div>
+
+        <div id="feedback"></div>
+
+        <div class="score-board">
+            <div>Skor Siswa: <span id="score-siswa">0</span></div>
+            <div>Skor Komputer: <span id="score-komputer">0</span></div>
+        </div>
+
+        <button class="restart-btn" id="restart-btn" onclick="resetGame()">Main Lagi</button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Berapa kali dering telepon maksimal yang idealnya harus diangkat saat menerima panggilan masuk di kantor?",
+                options: ["1 kali dering", "Maksimal 3 kali dering", "5 kali dering", "Biarkan sampai berdering terus"],
+                answer: 1
+            },
+            {
+                question: "Kalimat salam pembuka (greeting) telepon kantor yang profesional dan sopan adalah...",
+                options: ["Halo, mau cari siapa?", "Selamat pagi, dengan PT Sejahtera, ada yang bisa dibantu?", "Ya, ada apa?", "Siapa ini ya?"],
+                answer: 1
+            },
+            {
+                question: "Sikap tubuh (posture) yang disarankan saat melakukan atau menerima panggilan telepon bisnis adalah...",
+                options: ["Duduk bersandar santai", "Sambil berbaring", "Duduk tegak dan tersenyum (smile voice)", "Berjalan-jalan keluar ruangan"],
+                answer: 2
+            },
+            {
+                question: "Alat tulis yang wajib disiapkan di dekat telepon kantor berfungsi untuk...",
+                options: ["Mencoret-coret meja", "Mencatat pesan atau informasi penting dari penelepon", "Menggambar saat bosan", "Sebagai pajangan meja"],
+                answer: 1
+            },
+            {
+                question: "Jika penelepon salah sambung (wrong number), tindakan yang tepat adalah...",
+                options: ["Dimarahi lalu dimatikan", "Langsung ditutup teleponnya", "Dijawab dengan sopan bahwa nomor yang dituju salah", "Dibiarkan saja mendengarkan"],
+                answer: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let scoreSiswa = 0;
+        let scoreKomputer = 0;
+        let flagPosition = 50; // Posisi awal persentase (50% di tengah)
+
+        const qNumEl = document.getElementById('q-num');
+        const qTextEl = document.getElementById('q-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackEl = document.getElementById('feedback');
+        const flagEl = document.getElementById('flag');
+        const scoreSiswaEl = document.getElementById('score-siswa');
+        const scoreKomputerEl = document.getElementById('score-komputer');
+        const restartBtn = document.getElementById('restart-btn');
+        const quizContainer = document.getElementById('quiz-container');
+
+        function loadQuestion() {
+            if (currentQuestion < questions.length) {
+                let q = questions[currentQuestion];
+                qNumEl.innerText = `Pertanyaan ${currentQuestion + 1} dari ${questions.length}`;
+                qTextEl.innerText = q.question;
+                optionsContainer.innerHTML = '';
+
+                q.options.forEach((opt, index) => {
+                    let btn = document.createElement('button');
+                    btn.classList.add('option-btn');
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(index);
+                    optionsContainer.appendChild(btn);
+                });
+                feedbackEl.innerText = '';
+            } else {
+                endGame();
+            }
+        }
+
+        function checkAnswer(selectedIndex) {
+            let q = questions[currentQuestion];
+            let buttons = document.querySelectorAll('.option-btn');
+            
+            // Disable semua tombol setelah memilih
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === q.answer) {
+                // Jawaban Benar -> Tali bergeser ke kiri (Siswa)
+                scoreSiswa++;
+                flagPosition -= 10; // Geser ke kiri
+                feedbackEl.style.color = '#00b894';
+                feedbackEl.innerText = "Benar! Tali tertarik ke arah Siswa 🧑‍🎓";
+            } else {
+                // Jawaban Salah -> Tali bergeser ke kanan (Komputer)
+                scoreKomputer++;
+                flagPosition += 10; // Geser ke kanan
+                feedbackEl.style.color = '#d63031';
+                feedbackEl.innerText = `Kurang tepat. Jawaban yang benar adalah: "${q.options[q.answer]}". Tali tertarik ke Komputer 💻`;
+            }
+
+            // Batasi posisi bendera agar tidak keluar arena (min 5%, max 95%)
+            if (flagPosition < 5) flagPosition = 5;
+            if (flagPosition > 95) flagPosition = 95;
+
+            flagEl.style.left = flagPosition + '%';
+            scoreSiswaEl.innerText = scoreSiswa;
+            scoreKomputerEl.innerText = scoreKomputer;
+
+            currentQuestion++;
+
+            // Lanjut ke soal berikutnya setelah jeda 2 detik
+            setTimeout(() => {
+                if (currentQuestion < questions.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2200);
+        }
+
+        function endGame() {
+            quizContainer.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
+
+            if (flagPosition < 50) {
+                feedbackEl.style.color = '#00b894';
+                feedbackEl.innerHTML = "🎉 <strong>SELAMAT! TIM SISWA MENANG!</strong><br>Anda berhasil menguasai materi Telephone Handling dengan baik.";
+            } else if (flagPosition > 50) {
+                feedbackEl.style.color = '#d63031';
+                feedbackEl.innerHTML = "💻 <strong>KOMPUTER MENANG!</strong><br>Ayo pelajari lagi materi Telephone Handling dan coba lagi.";
+            } else {
+                feedbackEl.style.color = '#f39c12';
+                feedbackEl.innerHTML = "🤝 <strong>PERTANDINGAN SERI (DRAW)!</strong>";
+            }
+        }
+
+        function resetGame() {
+            currentQuestion = 0;
+            scoreSiswa = 0;
+            scoreKomputer = 0;
+            flagPosition = 50;
+            flagEl.style.left = '50%';
+            scoreSiswaEl.innerText = '0';
+            scoreKomputerEl.innerText = '0';
+            quizContainer.style.display = 'block';
+            restartBtn.style.display = 'none';
+            loadQuestion();
+        }
+
+        // Jalankan game saat pertama kali dibuka
+        loadQuestion();
+    </script>
+</body>
+</html>
