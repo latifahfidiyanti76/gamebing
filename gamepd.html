@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jungkat-Jungkit Pengenalan Diri</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eaf3ff;
+    color: #173354;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 5px 20px #0002;
+}
+
+h1 { color: #2474d2; }
+
+.tim {
+    display: flex;
+    gap: 10px;
+}
+
+.tim div {
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.kiri { background: #2474d2; }
+.kanan { background: #e34f55; }
+
+.active {
+    outline: 4px solid #ffd166;
+}
+
+.arena {
+    background: #edf5df;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.panggung {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+}
+
+.tumpuan {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 65px solid #9ca9b8;
+}
+
+.tanah {
+    position: absolute;
+    bottom: 10px;
+    left: 5%;
+    right: 5%;
+    height: 7px;
+    background: #8ba575;
+    border-radius: 5px;
+}
+
+.papan {
+    position: absolute;
+    top: 75px;
+    left: 8%;
+    width: 84%;
+    height: 12px;
+    background: #a66b35;
+    border-radius: 8px;
+    transform: rotate(0deg);
+    transition: transform 0.5s;
+}
+
+.kursi {
+    position: absolute;
+    top: -10px;
+    width: 45px;
+    height: 8px;
+    background: #70451f;
+}
+
+.kursi:first-child { left: 5%; }
+.kursi:nth-child(2) { right: 5%; }
+
+.pemain {
+    position: absolute;
+    top: -48px;
+    font-size: 30px;
+}
+
+.pemain:nth-of-type(3) { left: 8%; }
+.pemain:nth-of-type(4) { right: 8%; }
+
+.skor {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+#pertanyaan {
+    font-size: 19px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+.jawaban {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    margin: 9px 0;
+    background: white;
+    border: 2px solid #dce5ef;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.jawaban:hover:not(:disabled) {
+    background: #eaf3ff;
+}
+
+.jawaban:disabled { cursor: default; }
+
+.benar { background: #c8f7d9 !important; }
+.salah { background: #ffd7d7 !important; }
+
+button {
+    padding: 12px 18px;
+    margin: 6px;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.lanjut {
+    background: #2474d2;
+    color: white;
+}
+
+.ulangi {
+    background: #e5eaf1;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#pesan {
+    min-height: 24px;
+    font-weight: bold;
+}
+
+#hasil {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.petunjuk {
+    color: #64748b;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚖️ Jungkat-Jungkit</h1>
+<h2>Materi Pengenalan Diri</h2>
+<p>Game Edukasi SMK Kelas X</p>
+
+<div class="tim">
+    <div class="kiri" id="timKiri">🔵 TIM KIRI</div>
+    <div class="kanan" id="timKanan">🔴 TIM KANAN</div>
+</div>
+
+<div class="arena">
+    <div class="panggung">
+        <div class="tanah"></div>
+        <div class="tumpuan"></div>
+
+        <div class="papan" id="papan">
+            <div class="kursi"></div>
+            <div class="kursi"></div>
+            <span class="pemain">🧑‍🎓</span>
+            <span class="pemain">🧑‍🎓</span>
+        </div>
+    </div>
+
+    <div class="skor">
+        <span id="skorKiri">Skor kiri: 0</span>
+        <span id="skorKanan">Skor kanan: 0</span>
+    </div>
+
+    <p id="status">Jungkat-jungkit seimbang!</p>
+</div>
+
+<p id="nomor">Soal 1 dari 10</p>
+<h3 id="pertanyaan"></h3>
+<div id="pilihan"></div>
+
+<p id="pesan"></p>
+
+<button class="lanjut" id="btnLanjut" onclick="berikutnya()" disabled>
+    Soal Berikutnya →
+</button>
+
+<button class="ulangi" onclick="ulangGame()">
+    🔄 Ulangi Game
+</button>
+
+<div id="hasil"></div>
+
+<p class="petunjuk">
+Jawaban benar mengangkat sisi tim yang menjawab.
+Jawaban salah menguntungkan tim lawan.
+</p>
+
+</div>
+
+<script>
+const soalKiri = [
+{
+    topik: "Identitas Diri",
+    tanya: "Informasi dasar yang tepat saat memperkenalkan diri adalah ...",
+    opsi: ["Nama dan informasi yang relevan", "PIN ATM", "Kata sandi", "Rahasia teman"],
+    benar: 0
+},
+{
+    topik: "Kelebihan Diri",
+    tanya: "Manakah contoh kelebihan diri yang positif?",
+    opsi: ["Suka mengejek", "Teliti dan suka membantu", "Malas belajar", "Suka menyalahkan"],
+    benar: 1
+},
+{
+    topik: "Minat dan Hobi",
+    tanya: "Bagaimana cara menceritakan hobi?",
+    opsi: ["Mengejek hobi teman", "Berbohong tentang hobi", "Menceritakannya dengan jujur", "Memotong pembicaraan"],
+    benar: 2
+},
+{
+    topik: "Cita-cita",
+    tanya: "Jika ditanya cita-cita, sebaiknya kita ...",
+    opsi: ["Menertawakan teman", "Memaksa teman setuju", "Tidak menjawab dengan sopan", "Menjelaskan cita-cita dan alasannya"],
+    benar: 3
+},
+{
+    topik: "Komunikasi",
+    tanya: "Sikap yang baik saat memperkenalkan diri adalah ...",
+    opsi: ["Jelas, sopan, dan percaya diri", "Berteriak", "Membelakangi teman", "Memotong pembicaraan"],
+    benar: 0
+}
+];
+
+const soalKanan = [
+{
+    topik: "Identitas Diri",
+    tanya: "Kalimat pembuka perkenalan yang baik adalah ...",
+    opsi: ["Kalian harus tahu rahasiaku", "Halo, nama saya Rani. Senang berkenalan.", "Aku tidak peduli", "Sebutkan PIN kalian"],
+    benar: 1
+},
+{
+    topik: "Kelebihan Diri",
+    tanya: "Cara mengenali kelebihan diri adalah ...",
+    opsi: ["Menyerah", "Merendahkan orang lain", "Mengenali kemampuan dan meminta masukan", "Menghindari belajar"],
+    benar: 2
+},
+{
+    topik: "Minat dan Hobi",
+    tanya: "Mengapa kita menyampaikan minat saat perkenalan?",
+    opsi: ["Agar semua orang wajib setuju", "Untuk meremehkan teman", "Agar bisa menyombongkan diri", "Agar orang lain mengenal kita"],
+    benar: 3
+},
+{
+    topik: "Cita-cita",
+    tanya: "Jika cita-cita kita berbeda dengan teman, kita harus ...",
+    opsi: ["Saling menghargai", "Mengejek teman", "Memaksa teman", "Berhenti berteman"],
+    benar: 0
+},
+{
+    topik: "Komunikasi",
+    tanya: "Setelah memperkenalkan diri, kita sebaiknya ...",
+    opsi: ["Pergi begitu saja", "Mendengarkan orang lain", "Memotong pembicaraan", "Menertawakan jawaban teman"],
+    benar: 1
+}
+];
+
+let nomorSoal = 0;
+let skorKiri = 0;
+let skorKanan = 0;
+let kemiringan = 0;
+let sudahMenjawab = false;
+let selesai = false;
+
+function timAktif() {
+    return nomorSoal % 2 === 0 ? "kiri" : "kanan";
+}
+
+function soalAktif() {
+    let indeks = Math.floor(nomorSoal / 2);
+    return timAktif() === "kiri"
+        ? soalKiri[indeks]
+        : soalKanan[indeks];
+}
+
+function tampilkanSoal() {
+    sudahMenjawab = false;
+
+    const tim = timAktif();
+    const soal = soalAktif();
+
+    document.getElementById("nomor").textContent =
+        "Soal " + (nomorSoal + 1) + " dari 10";
+
+    document.getElementById("pertanyaan").textContent =
+        "[" + soal.topik + "] " + soal.tanya;
+
+    document.getElementById("timKiri").classList.toggle(
+        "active", tim === "kiri"
+    );
+
+    document.getElementById("timKanan").classList.toggle(
+        "active", tim === "kanan"
+    );
+
+    document.getElementById("pesan").textContent = "";
+    document.getElementById("hasil").textContent = "";
+    document.getElementById("pilihan").innerHTML = "";
+
+    soal.opsi.forEach((teks, indeks) => {
+        const tombol = document.createElement("button");
+        tombol.className = "jawaban";
+        tombol.textContent =
+            String.fromCharCode(65 + indeks) + ". " + teks;
+
+        tombol.onclick = () => periksaJawaban(indeks, tombol);
+
+        document.getElementById("pilihan").appendChild(tombol);
+    });
+
+    document.getElementById("btnLanjut").disabled = true;
+
+    document.getElementById("btnLanjut").textContent =
+        nomorSoal === 9 ? "Lihat Hasil" : "Soal Berikutnya →";
+}
+
+function periksaJawaban(pilihan, tombol) {
+    if (sudahMenjawab || selesai) return;
+
+    sudahMenjawab = true;
+
+    const tim = timAktif();
+    const soal = soalAktif();
+
+    document.querySelectorAll(".jawaban").forEach((b, i) => {
+        b.disabled = true;
+        if (i === soal.benar) b.classList.add("benar");
+    });
+
+    if (pilihan === soal.benar) {
+        if (tim === "kiri") {
+            skorKiri++;
+            kemiringan = Math.max(-5, kemiringan - 1);
+        } else {
+            skorKanan++;
+            kemiringan = Math.min(5, kemiringan + 1);
+        }
+
+        document.getElementById("pesan").textContent =
+            "✅ Jawaban benar! Sisi tim aktif terangkat.";
+        document.getElementById("pesan").style.color = "green";
+    } else {
+        tombol.classList.add("salah");
+
+        if (tim === "kiri") {
+            kemiringan = Math.min(5, kemiringan + 1);
+        } else {
+            kemiringan = Math.max(-5, kemiringan - 1);
+        }
+
+        document.getElementById("pesan").textContent =
+            "❌ Jawaban salah! Poin keuntungan untuk lawan.";
+        document.getElementById("pesan").style.color = "red";
+    }
+
+    document.getElementById("skorKiri").textContent =
+        "Skor kiri: " + skorKiri;
+
+    document.getElementById("skorKanan").textContent =
+        "Skor kanan: " + skorKanan;
+
+    gerakkanJungkatJungkit();
+
+    document.getElementById("btnLanjut").disabled = false;
+}
+
+function gerakkanJungkatJungkit() {
+    document.getElementById("papan").style.transform =
+        "rotate(" + (kemiringan * 4) + "deg)";
+
+    if (kemiringan < 0) {
+        document.getElementById("status").textContent =
+            "Sisi kiri lebih rendah — Tim Kiri unggul!";
+    } else if (kemiringan > 0) {
+        document.getElementById("status").textContent =
+            "Sisi kanan lebih rendah — Tim Kanan unggul!";
+    } else {
+        document.getElementById("status").textContent =
+            "Jungkat-jungkit seimbang!";
+    }
+}
+
+function berikutnya() {
+    if (!sudahMenjawab || selesai) return;
+
+    if (nomorSoal === 9) {
+        akhirGame();
+        return;
+    }
+
+    nomorSoal++;
+    tampilkanSoal();
+}
+
+function akhirGame() {
+    selesai = true;
+
+    document.getElementById("pertanyaan").textContent = "";
+    document.getElementById("pilihan").innerHTML = "";
+    document.getElementById("pesan").textContent = "";
+    document.getElementById("btnLanjut").disabled = true;
+
+    if (skorKiri > skorKanan) {
+        document.getElementById("hasil").textContent =
+            "🏆 TIM KIRI MENANG!";
+    } else if (skorKanan > skorKiri) {
+        document.getElementById("hasil").textContent =
+            "🏆 TIM KANAN MENANG!";
+    } else {
+        document.getElementById("hasil").textContent =
+            "🤝 HASIL SERI!";
+    }
+
+    document.getElementById("hasil").textContent +=
+        " Skor akhir: " + skorKiri + " - " + skorKanan;
+}
+
+function ulangGame() {
+    nomorSoal = 0;
+    skorKiri = 0;
+    skorKanan = 0;
+    kemiringan = 0;
+    sudahMenjawab = false;
+    selesai = false;
+
+    document.getElementById("skorKiri").textContent = "Skor kiri: 0";
+    document.getElementById("skorKanan").textContent = "Skor kanan: 0";
+    document.getElementById("papan").style.transform = "rotate(0deg)";
+    document.getElementById("status").textContent =
+        "Jungkat-jungkit seimbang!";
+
+    tampilkanSoal();
+}
+
+tampilkanSoal();
+</script>
+
+</body>
+</html>
