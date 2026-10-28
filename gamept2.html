@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lomba Labirin Procedure Text</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #e8f5e9;
+  text-align: center;
+  margin: 0;
+  color: #173b2b;
+}
+
+header {
+  background: #237a45;
+  color: white;
+  padding: 18px;
+}
+
+.panel {
+  background: white;
+  width: 92%;
+  max-width: 700px;
+  margin: 18px auto;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px #c5d9c7;
+}
+
+#maze {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  max-width: 420px;
+  margin: 15px auto;
+  padding: 5px;
+  background: #244d34;
+  border-radius: 8px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  background: #254d35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: clamp(12px, 3vw, 22px);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.path { background: #d8f3c9; }
+.start { background: #fff1a8; }
+.finish { background: #ffc978; }
+
+#question {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 18px 0;
+}
+
+#options {
+  display: grid;
+  gap: 9px;
+}
+
+.option {
+  padding: 12px;
+  background: #f1fff0;
+  border: 2px solid #4b9562;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.option:hover { background: #d8f5d4; }
+.option:disabled { cursor: default; }
+
+button.action {
+  padding: 12px 18px;
+  margin: 6px;
+  background: #237a45;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#feedback {
+  font-weight: bold;
+  margin: 15px;
+  min-height: 24px;
+}
+
+.scores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.score {
+  background: #f1f8f1;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+@media (max-width: 450px) {
+  .panel { padding: 10px; }
+  #question { font-size: 16px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🧩 LOMBA LABIRIN 🏁</h1>
+  <p>Materi Bahasa Inggris: Procedure Text</p>
+</header>
+
+<div class="panel">
+  <h3>Aturan Permainan</h3>
+  <p>Jawaban benar = maju satu langkah.</p>
+  <p>Jawaban salah = tetap diam.</p>
+  <div id="maze"></div>
+  <p>🔴 Atas 1 | 🔵 Atas 2 | 🟢 Bawah 1 | 🟡 Bawah 2</p>
+</div>
+
+<div class="panel">
+  <h3>Skor Tim</h3>
+  <div class="scores" id="scores"></div>
+</div>
+
+<div class="panel">
+  <h3 id="turnInfo">Siap bermain?</h3>
+  <p id="topic">Procedure Text</p>
+  <div id="question">Klik Mulai Game untuk bermain.</div>
+  <div id="options"></div>
+  <div id="feedback"></div>
+
+  <button class="action" id="startBtn" onclick="startGame()">
+    Mulai Game
+  </button>
+
+  <button class="action" id="nextBtn" onclick="nextTurn()" hidden>
+    Soal Berikutnya
+  </button>
+
+  <button class="action" onclick="resetGame()">
+    Ulangi Game
+  </button>
+</div>
+
+<script>
+const questions = [
+  {
+    topic: "Pengertian Procedure Text",
+    q: "What is the purpose of a procedure text?",
+    a: [
+      "To describe a person",
+      "To explain how to do something",
+      "To tell a past experience",
+      "To entertain the reader"
+    ],
+    correct: 1
+  },
+  {
+    topic: "Struktur Procedure Text",
+    q: "What are the common parts of a procedure text?",
+    a: [
+      "Orientation, complication, resolution",
+      "Goal, materials, steps",
+      "Identification and description",
+      "Thesis and arguments"
+    ],
+    correct: 1
+  },
+  {
+    topic: "Imperative Sentence",
+    q: "Which sentence is an instruction?",
+    a: [
+      "She is happy.",
+      "He likes tea.",
+      "Wash your hands!",
+      "They went home."
+    ],
+    correct: 2
+  },
+  {
+    topic: "Sequence Words",
+    q: "Which word can begin a procedure?",
+    a: ["Finally", "First", "Although", "Because"],
+    correct: 1
+  },
+  {
+    topic: "Materials",
+    q: "What are materials in a procedure text?",
+    a: [
+      "Things needed to do something",
+      "The writer's feelings",
+      "The ending of a story",
+      "The characters"
+    ],
+    correct: 0
+  },
+  {
+    topic: "Action Verbs",
+    q: "Which word is an action verb?",
+    a: ["Beautiful", "Slowly", "Cut", "Green"],
+    correct: 2
+  },
+  {
+    topic: "Making Tea",
+    q: "What should you prepare before making tea?",
+    a: [
+      "A school bag",
+      "Tea, water, and a cup",
+      "A pair of shoes",
+      "A football"
+    ],
+    correct: 1
+  },
+  {
+    topic: "Sequence Words",
+    q: "Which word usually indicates the last step?",
+    a: ["First", "Next", "Then", "Finally"],
+    correct: 3
+  },
+  {
+    topic: "Language Features",
+    q: "Which tense is commonly used in procedure text?",
+    a: [
+      "Simple present tense",
+      "Simple past tense",
+      "Past perfect tense",
+      "Past continuous tense"
+    ],
+    correct: 0
+  },
+  {
+    topic: "Washing Hands",
+    q: "What should you do after applying soap?",
+    a: [
+      "Touch dirty objects",
+      "Rinse your hands with water",
+      "Add more dirt",
+      "Stop immediately"
+    ],
+    correct: 1
+  }
+];
+
+const teams = [
+  {name:"Tim Atas 1", icon:"🔴", pos:0, score:0, asked:0},
+  {name:"Tim Atas 2", icon:"🔵", pos:0, score:0, asked:0},
+  {name:"Tim Bawah 1", icon:"🟢", pos:0, score:0, asked:0},
+  {name:"Tim Bawah 2", icon:"🟡", pos:0, score:0, asked:0}
+];
+
+// Jalur labirin dari titik mulai menuju garis finis.
+const path = [
+  [0,0],[0,1],[0,2],[1,2],[2,2],
+  [2,3],[2,4],[3,4],[4,4],[4,5],[4,6]
+];
+
+let order = [];
+let turn = 0;
+let answered = false;
+let running = false;
+let currentQuestion;
+
+function buildMaze() {
+  const maze = document.getElementById("maze");
+  maze.innerHTML = "";
+
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 7; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.id = `cell-${r}-${c}`;
+
+      const index = path.findIndex(
+        p => p[0] === r && p[1] === c
+      );
+
+      if (index >= 0) {
+        cell.classList.add("path");
+
+        if (index === 0) {
+          cell.classList.add("start");
+          cell.textContent = "🚩";
+        }
+
+        if (index === path.length - 1) {
+          cell.classList.add("finish");
+          cell.textContent = "🏁";
+        }
+      }
+
+      maze.appendChild(cell);
+    }
+  }
+
+  drawPlayers();
+}
+
+function drawPlayers() {
+  path.forEach(([r,c], index) => {
+    const cell = document.getElementById(`cell-${r}-${c}`);
+    if (!cell) return;
+
+    cell.innerHTML = "";
+    if (index === 0) cell.textContent = "🚩";
+    if (index === path.length - 1) cell.textContent = "🏁";
+  });
+
+  teams.forEach(team => {
+    const [r,c] = path[team.pos];
+    const cell = document.getElementById(`cell-${r}-${c}`);
+
+    const marker = document.createElement("span");
+    marker.textContent = team.icon;
+    marker.title = team.name;
+    cell.appendChild(marker);
+  });
+}
+
+function createOrder() {
+  order = [];
+
+  // Bergantian: Atas 1, Bawah 1, Atas 2, Bawah 2.
+  for (let i = 0; i < 10; i++) {
+    order.push(0, 2, 1, 3);
+  }
+}
+
+function startGame() {
+  if (running) return;
+
+  running = true;
+  document.getElementById("startBtn").hidden = true;
+  createOrder();
+  showQuestion();
+}
+
+function showQuestion() {
+  if (turn >= order.length) {
+    finishGame();
+    return;
+  }
+
+  answered = false;
+
+  const teamIndex = order[turn];
+  const team = teams[teamIndex];
+  currentQuestion = questions[team.asked];
+
+  document.getElementById("turnInfo").textContent =
+    "Giliran " + team.name +
+    " | Soal " + (team.asked + 1) + " dari 10";
+
+  document.getElementById("topic").textContent =
+    "Topik: " + currentQuestion.topic;
+
+  document.getElementById("question").textContent =
+    currentQuestion.q;
+
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("nextBtn").hidden = true;
+
+  const options = document.getElementById("options");
+  options.innerHTML = "";
+
+  currentQuestion.a.forEach((answer, index) => {
+    const button = document.createElement("button");
+    button.className = "option";
+    button.textContent =
+      String.fromCharCode(65 + index) + ". " + answer;
+
+    button.onclick = () => checkAnswer(index, teamIndex);
+    options.appendChild(button);
+  });
+}
+
+function checkAnswer(choice, teamIndex) {
+  if (answered) return;
+  answered = true;
+
+  const team = teams[teamIndex];
+  const correct = choice === currentQuestion.correct;
+
+  document.querySelectorAll(".option").forEach((button,index) => {
+    button.disabled = true;
+
+    if (index === currentQuestion.correct) {
+      button.style.background = "#a5d6a7";
+    }
+
+    if (index === choice && !correct) {
+      button.style.background = "#ef9a9a";
+    }
+  });
+
+  team.asked++;
+
+  if (correct) {
+    team.score++;
+    team.pos = Math.min(team.pos + 1, path.length - 1);
+
+    document.getElementById("feedback").textContent =
+      "✅ Benar! " + team.name + " maju satu langkah!";
+  } else {
+    document.getElementById("feedback").textContent =
+      "❌ Salah! " + team.name + " tetap diam.";
+  }
+
+  drawPlayers();
+  updateScores();
+
+  document.getElementById("nextBtn").hidden = false;
+  document.getElementById("nextBtn").textContent =
+    turn === order.length - 1
+      ? "Lihat Hasil 🏆"
+      : "Soal Berikutnya →";
+}
+
+function nextTurn() {
+  if (!answered) return;
+  turn++;
+  showQuestion();
+}
+
+function updateScores() {
+  const scores = document.getElementById("scores");
+  scores.innerHTML = "";
+
+  teams.forEach(team => {
+    const card = document.createElement("div");
+    card.className = "score";
+    card.innerHTML =
+      team.icon + " <b>" + team.name + "</b><br>" +
+      "Skor benar: " + team.score + " / 10<br>" +
+      "Posisi: " + (team.pos + 1) + " / " + path.length;
+
+    scores.appendChild(card);
+  });
+}
+
+function finishGame() {
+  running = false;
+
+  document.getElementById("turnInfo").textContent =
+    "🏁 PERLOMBAAN SELESAI!";
+
+  document.getElementById("topic").textContent = "Hasil Akhir";
+  document.getElementById("question").textContent =
+    "Semua tim sudah menjawab 10 soal.";
+
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("nextBtn").hidden = true;
+
+  const furthest = Math.max(...teams.map(t => t.pos));
+  const winners = teams
+    .filter(t => t.pos === furthest)
+    .map(t => t.name);
+
+  document.getElementById("feedback").textContent =
+    "🏆 Pemenang: " + winners.join(" dan ") +
+    " — posisi " + (furthest + 1) + "!";
+
+  document.getElementById("startBtn").hidden = false;
+  document.getElementById("startBtn").textContent = "Main Lagi";
+}
+
+function resetGame() {
+  turn = 0;
+  running = false;
+  answered = false;
+  order = [];
+
+  teams.forEach(team => {
+    team.pos = 0;
+    team.score = 0;
+    team.asked = 0;
+  });
+
+  document.getElementById("turnInfo").textContent = "Siap bermain?";
+  document.getElementById("topic").textContent = "Procedure Text";
+  document.getElementById("question").textContent =
+    "Klik Mulai Game untuk bermain.";
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("startBtn").hidden = false;
+  document.getElementById("startBtn").textContent = "Mulai Game";
+  document.getElementById("nextBtn").hidden = true;
+
+  buildMaze();
+  updateScores();
+}
+
+buildMaze();
+updateScores();
+</script>
+
+</body>
+</html>
