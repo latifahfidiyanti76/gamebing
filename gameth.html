@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Tarik Tambang Telephone Handling</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #eaf3ff;
+    margin: 0;
+    padding: 20px;
+    color: #173354;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 5px 20px #0002;
+}
+
+h1 { color: #1764b0; }
+
+.teams {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.team {
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+}
+
+.siswa { background: #2474d2; }
+.komputer { background: #e34d52; }
+
+.arena {
+    background: #e6f0d8;
+    padding: 25px 10px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.tali {
+    font-size: 35px;
+    transition: transform 0.5s;
+}
+
+#posisi {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#pertanyaan {
+    font-size: 19px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.jawaban {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    margin: 10px 0;
+    border: 2px solid #d5dfeb;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+}
+
+.jawaban:hover:not(:disabled) {
+    background: #eaf3ff;
+    border-color: #2474d2;
+}
+
+.jawaban:disabled { cursor: default; }
+.benar { background: #c8f7d9 !important; }
+.salah { background: #ffd7d7 !important; }
+
+button.lanjut, button.ulangi {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 9px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 8px;
+}
+
+.lanjut { background: #2474d2; color: white; }
+.ulangi { background: #e5eaf1; color: #173354; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#hasil {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 20px;
+}
+
+.info { color: #63758a; font-size: 14px; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>🪢 Tarik Tambang</h1>
+    <h2>Telephone Handling - SMK Kelas X</h2>
+
+    <div class="teams">
+        <div class="team siswa">🔵 TIM KIRI<br>SISWA</div>
+        <div class="team komputer">🔴 TIM KANAN<br>KOMPUTER</div>
+    </div>
+
+    <div class="arena">
+        <div class="tali" id="tali">🔵 🪢 🔴</div>
+        <div id="posisi">Posisi seimbang!</div>
+    </div>
+
+    <p id="nomor">Pertanyaan 1 dari 5</p>
+    <div id="pertanyaan"></div>
+    <div id="pilihan"></div>
+
+    <p id="pesan"></p>
+    <p id="skor">Skor siswa: 0</p>
+
+    <button class="lanjut" id="btnLanjut"
+        onclick="berikutnya()" disabled>
+        Soal Berikutnya →
+    </button>
+
+    <button class="ulangi" onclick="mulaiUlang()">
+        🔄 Ulangi Game
+    </button>
+
+    <div id="hasil"></div>
+
+    <p class="info">
+        Jawaban benar menarik tali ke kiri.
+        Jawaban salah menarik tali ke kanan.
+    </p>
+</div>
+
+<script>
+const soal = [
+    {
+        t: "1. Apa yang diucapkan pertama kali saat menerima telepon kantor?",
+        p: [
+            "Langsung bertanya ada keperluan apa",
+            "Salam dan menyebutkan nama perusahaan",
+            "Diam menunggu penelepon",
+            "Langsung menutup telepon"
+        ],
+        b: 1,
+        e: "Awali dengan salam dan identitas perusahaan."
+    },
+    {
+        t: "2. Bagaimana sikap yang baik saat menerima telepon?",
+        p: [
+            "Berbicara dengan sopan dan jelas",
+            "Berbicara sambil berteriak",
+            "Memotong pembicaraan",
+            "Berbicara dengan kasar"
+        ],
+        b: 0,
+        e: "Gunakan bahasa yang sopan, ramah, dan jelas."
+    },
+    {
+        t: "3. Jika orang yang dicari tidak ada, apa yang dilakukan?",
+        p: [
+            "Langsung menutup telepon",
+            "Mengabaikan penelepon",
+            "Menawarkan untuk mencatat pesan",
+            "Marah kepada penelepon"
+        ],
+        b: 2,
+        e: "Tawarkan bantuan atau catat pesan penelepon."
+    },
+    {
+        t: "4. Informasi apa yang dicatat ketika menerima pesan?",
+        p: [
+            "Warna pakaian penelepon",
+            "Nama, nomor kontak, dan isi pesan",
+            "Merek telepon penelepon",
+            "Alamat teman penerima telepon"
+        ],
+        b: 1,
+        e: "Catat nama, nomor kontak, isi pesan, dan waktu."
+    },
+    {
+        t: "5. Apa yang dilakukan sebelum mengakhiri panggilan?",
+        p: [
+            "Langsung memutus telepon",
+            "Berbicara dengan kasar",
+            "Memastikan pesan jelas dan mengucapkan terima kasih",
+            "Diam tanpa berpamitan"
+        ],
+        b: 2,
+        e: "Akhiri panggilan dengan sopan dan ucapkan terima kasih."
+    }
+];
+
+let nomorSoal = 0;
+let skor = 0;
+let posisi = 0;
+let sudahMenjawab = false;
+let selesai = false;
+
+function tampilkanSoal() {
+    sudahMenjawab = false;
+
+    document.getElementById("nomor").textContent =
+        `Pertanyaan ${nomorSoal + 1} dari ${soal.length}`;
+
+    document.getElementById("pertanyaan").textContent =
+        soal[nomorSoal].t;
+
+    document.getElementById("pilihan").innerHTML = "";
+    document.getElementById("pesan").textContent = "";
+    document.getElementById("hasil").textContent = "";
+
+    soal[nomorSoal].p.forEach((teks, index) => {
+        const tombol = document.createElement("button");
+        tombol.className = "jawaban";
+        tombol.textContent =
+            String.fromCharCode(65 + index) + ". " + teks;
+
+        tombol.onclick = () => periksaJawaban(index, tombol);
+
+        document.getElementById("pilihan").appendChild(tombol);
+    });
+
+    document.getElementById("btnLanjut").disabled = true;
+    document.getElementById("btnLanjut").textContent =
+        nomorSoal === soal.length - 1
+        ? "Lihat Hasil"
+        : "Soal Berikutnya →";
+
+    document.getElementById("skor").textContent =
+        "Skor siswa: " + skor;
+}
+
+function periksaJawaban(index, tombol) {
+    if (sudahMenjawab || selesai) return;
+
+    sudahMenjawab = true;
+
+    const jawabanBenar = soal[nomorSoal].b;
+    const semuaTombol =
+        document.querySelectorAll(".jawaban");
+
+    semuaTombol.forEach((t, i) => {
+        t.disabled = true;
+
+        if (i === jawabanBenar) {
+            t.classList.add("benar");
+        }
+    });
+
+    if (index === jawabanBenar) {
+        skor++;
+        posisi = Math.max(-5, posisi - 1);
+
+        document.getElementById("pesan").textContent =
+            "✅ Benar! " + soal[nomorSoal].e;
+
+        document.getElementById("pesan").style.color = "green";
+    } else {
+        posisi = Math.min(5, posisi + 1);
+        tombol.classList.add("salah");
+
+        document.getElementById("pesan").textContent =
+            "❌ Salah! " + soal[nomorSoal].e;
+
+        document.getElementById("pesan").style.color = "red";
+    }
+
+    document.getElementById("skor").textContent =
+        "Skor siswa: " + skor;
+
+    gerakkanTali();
+
+    document.getElementById("btnLanjut").disabled = false;
+
+    // Jika siswa menjawab benar lima kali, siswa menang.
+    if (skor === 5 && nomorSoal === 4 && index === jawabanBenar) {
+        document.getElementById("btnLanjut").textContent =
+            "Lihat Hasil";
+    }
+
+    if (posisi <= -5) {
+        akhirGame(true);
+    } else if (posisi >= 5) {
+        akhirGame(false);
+    }
+}
+
+function gerakkanTali() {
+    const tali = document.getElementById("tali");
+
+    tali.style.transform = `translateX(${posisi * 28}px)`;
+
+    if (posisi < 0) {
+        document.getElementById("posisi").textContent =
+            "Siswa unggul " + Math.abs(posisi) + " langkah!";
+    } else if (posisi > 0) {
+        document.getElementById("posisi").textContent =
+            "Komputer unggul " + posisi + " langkah!";
+    } else {
+        document.getElementById("posisi").textContent =
+            "Posisi seimbang!";
+    }
+}
+
+function berikutnya() {
+    if (!sudahMenjawab || selesai) return;
+
+    if (nomorSoal === soal.length - 1) {
+        akhirGame(skor === 5);
+        return;
+    }
+
+    nomorSoal++;
+    tampilkanSoal();
+}
+
+function akhirGame(siswaMenang) {
+    selesai = true;
+
+    document.getElementById("pertanyaan").textContent = "";
+    document.getElementById("pilihan").innerHTML = "";
+    document.getElementById("pesan").textContent = "";
+    document.getElementById("btnLanjut").disabled = true;
+
+    document.getElementById("hasil").textContent =
+        siswaMenang
+        ? "🏆 SISWA MENANG! Hebat, semua 5 soal dijawab benar!"
+        : "🤖 KOMPUTER MENANG! Skor siswa: " + skor + "/5. Coba lagi!";
+}
+
+function mulaiUlang() {
+    nomorSoal = 0;
+    skor = 0;
+    posisi = 0;
+    sudahMenjawab = false;
+    selesai = false;
+
+    document.getElementById("tali").style.transform = "translateX(0)";
+    document.getElementById("posisi").textContent = "Posisi seimbang!";
+    document.getElementById("hasil").textContent = "";
+
+    tampilkanSoal();
+}
+
+tampilkanSoal();
+</script>
+</body>
+</html>
